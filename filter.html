@@ -1,0 +1,25 @@
+var City="London";
+ var strSevText="High";
+
+    d3.csv("Status.csv", function(consdata) {
+
+    var filtercitydata = consdata.filter(function(d, i) 
+    { 
+
+            if (d["City"] == City) 
+            { 
+                return d; 
+            } 
+
+        })
+
+    var filtersevdata = filtercitydata.filter(function(d, i) 
+        { 
+            if (d["Criticality"] == strSevText) 
+            { 
+                return d; 
+            } 
+
+        })
+
+      })

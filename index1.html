@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js and the geo projection plugin -->
+<script src="https://d3js.org/d3.v4.js"></script>
+<script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+
+<div>
+  <input type="checkbox" class="checkbox" value="Employment Preference 1st" checked><label>Family Preference 1</label>
+  <input type="checkbox" class="checkbox" value="Employment Preference 2nd" checked><label>Family Preference 2</label>
+  <input type="checkbox" class="checkbox" value="Employment Preference 3rd" checked><label>Family Preference 3</label>
+</div>
+
+<script>
+  d3.csv("finalsheet.csv", function(data) {
+    var filteredData = data.filter(function(d) { 
+
+      if( d["Major.Class.of.Admission"] == "Employment Preference 2nd" && d["Country.of.Birth"]=="Bangladesh") { 
+        return d;
+      } 
+
+    })
+    console.log(filteredData[0].Admissions)
+
+  })
+</script>
