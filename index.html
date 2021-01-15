@@ -12,34 +12,6 @@
 
 <h1>LPR Top 200</h1>
 
-<!-- <select id="form-select" aria-label="Default select example"> -->
-  <!-- <option selected="selected">Asian Countries</option> -->
-  <!-- <option value="Bangladesh">Bangladesh</option>
-  <option value="Bhutan">Bhutan</option>
-  <option value="Brunei">Brunei</option>
-  <option value="Burma">Burma</option>
-  <option value="Cambodia">Cambodia</option> -->
-  <!-- <option value="China, People's Republic">China, People's Republic</option>
-  <option value="1">Hong Kong</option>
-  <option value="2">India</option>
-  <option value="3">Indonesia</option>
-  <option value="1">Japan</option>
-  <option value="2">Korea, North</option>
-  <option value="3">Korea, South</option>
-  <option value="1">Laos</option>
-  <option value="2">Macao</option>
-  <option value="3">Malaysia</option>
-  <option value="1">Maldives</option>
-  <option value="2">Mongolia</option>
-  <option value="3">Nepal</option>
-  <option value="1">Pakistan</option>
-  <option value="2">Philippines</option>
-  <option value="3">Singapore</option>
-  <option value="1">Sri Lanka</option>
-  <option value="2">Taiwan</option>
-  <option value="3">Thailand</option>
-  <option value="3">Vietnam</option> -->
-<!-- </select> -->
 <select id="selectButton"></select>
 <!-- Button -->
 <div>
@@ -127,7 +99,9 @@
     // Load external data and boot
     d3.json("gz_2010_us_040_00_20m.json", function(data_json){
 
-      var allGroup = ["", "Bangladesh", "Bhutan", "Brunei", "Burma", "Cambodia", "China, People's Republic"]
+      var allGroup = ["", "Bangladesh", "Bhutan", "Brunei", "Burma", "Cambodia", "China, People's Republic", "Hong Kong", "India", "Indonesia",
+                        "Japan", "Korea, North", "Korea, South", "Laos", "Macau", "Malaysia", "Maldives", "Mongolia", "Nepal", "Pakistan", "Philippines",
+                      "Singapore", "Sri Lanka", "Taiwan", "Thailand", "Vietnam"]
 
           // add the options to the button
         d3.select("#selectButton")
@@ -230,6 +204,7 @@
           // }
           console.log(datamarkers)
 
+          max = 0
           datamarkers.forEach(function(d) {
             d["Admissions"] = +d["Admissions"];
             if (d["Admissions"] > max) {
@@ -249,7 +224,6 @@
           svg
           .selectAll("myCircles")
           .data(datamarkers)
-            //.sort(function(a, b) { return b.properties.Admissions - a.properties.Admissions}))
           .enter()
           .append("circle")
               .attr("class" , function(d){ return (d.MajorClassAdmission) })
