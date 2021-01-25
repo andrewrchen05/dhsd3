@@ -7,6 +7,9 @@
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/queue.v1.min.js"></script>
 <script src="http://d3js.org/topojson.v1.min.js"></script>
+<script src= "https://d3js.org/d3-color.v1.min.js"></script> 
+<script src= "https://d3js.org/d3-interpolate.v1.min.js"></script>  
+<script src= "https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 
 <style>
 
@@ -106,11 +109,12 @@ input {
 <body>
 
 <div id="content">
-	<h1>U.S. Daily Cigarette Smoking Rate, 1996-2012</h1>
+  <h1>LPR Top 200 AAPI 2000-2019</h1>
+  <select id="selectButton"></select>
 	<h2 class="year"></h2>
 	<div class="slider"></div>
 	<div id="map"></div>
-	<p>Source: Institute for Health Metrics and Evaluation.</p>
+	<p>Source: DHS.gov</p>
 </div>
 
 <script>
@@ -130,8 +134,7 @@ tooltip = d3.select("body").append("div")
 	.style("opacity", 0);
 
 queue()
-    //.defer(d3.csv, "smoking-data.csv")
-    .defer(d3.csv, "data/sheet.csv")
+  .defer(d3.csv, "data/sheet.csv")
 	.defer(d3.json, "us.json")
 	.await(ready);
 
@@ -149,11 +152,12 @@ function ready(error, data, us) {
   });
     
     markers = data.filter(function(d) {
-        if (d["CountryofBirth"] == "China, People's Republic" && d["MajorClassAdmission"] == "EmploymentPreference1st" && d["Admissions"] != "D" && !isNaN(d["Admissions"])) {
-            return d
+        //if (d["CountryofBirth"] == "China, People's Republic" && d["MajorClassAdmission"] == "EmploymentPreference1st" && d["Admissions"] != "D" && !isNaN(d["Admissions"])) {
+        if (d["MajorClassAdmission"] == "EmploymentPreference1st" && d["Admissions"] != "D" && !isNaN(d["Admissions"])) {
+          return d
         }
     })
-    console.log(markers)
+    //console.log(markers)
 
     var max = 0
     markers.forEach(function(d) { 
@@ -163,28 +167,35 @@ function ready(error, data, us) {
     });  
 
 	  var dataByCounty = d3.nest()
-        //.key(function(d) { return d.fips; })
         .key(function(d) { return d.geoid; })
-		    //.key(function(d) { return d.Admissions; })
         .map(markers);
 
-    console.log(dataByCounty)
-
-    //console.log(dataByCountyByYear)
+    //console.log(dataByCounty)
         
     //Inefficient, this graph made for little missing data
 
 	  counties.features.forEach(function(county) {
-        // if (dataByCounty[+county.id] !== undefined) {
-        //   console.log("hello")
-        // }
         county.properties.data = dataByCounty[+county.id]
     });
 
+    var allGroup = ["", "Bangladesh", "Bhutan", "Brunei", "Burma", "Cambodia", "China, People's Republic", "Hong Kong", "India", "Indonesia",
+                        "Japan", "Korea, North", "Korea, South", "Laos", "Macau", "Malaysia", "Maldives", "Mongolia", "Nepal", "Pakistan", "Philippines",
+                      "Singapore", "Sri Lanka", "Taiwan", "Thailand", "Vietnam"]
+
+          // add the options to the button
+        d3.select("#selectButton")
+          .selectAll('myOptions')
+          .data(allGroup)
+          .enter()
+          .append('option')
+          .text(function (d) { return d; }) // text showed in the menu
+          .attr("value", function (d) { return d; }) // corresponding value returned by the button
+
 	var color = d3.scale.threshold()
         //.domain([10, 12.5, 15, 17.5, 20, 22.5, 25])
-        .domain([0, 50, 100, 150, 200, 250, max])
-		.range(["#fff7bc", "#fee391", "#fec44f", "#fe9929", "#ec7014", "#cc4c02", "#993404", "#662506"]);
+        .domain([0, 2, 4, 6, 8, 10, max])
+    //.range(["#fff7bc", "#fee391", "#fec44f", "#fe9929", "#ec7014", "#cc4c02", "#993404", "#662506"]);
+    .range(d3.schemeBlues[9])
 
 	var projection = d3.geo.albersUsa()
 		.translate([width / 2, height / 2]);
@@ -198,39 +209,6 @@ function ready(error, data, us) {
 		.append("path")
 			.attr("class", "county")
       .attr("d", path);
-      
-  function isUndefined(x) {
-    if (x === undefined) {
-      return 0
-    } else {
-      return x[0].Admissions
-    }
-  }
-
-  function isUndefined2(x) {
-    if (x === undefined) {
-      return 0
-    } else {
-      return x[0].geoid
-    }
-  }
-
-	countyShapes
-		.on("mouseover", function(d) {
-			tooltip.transition()
-			.duration(250)
-			.style("opacity", 1);
-			tooltip.html(
-			"<p>" + isUndefined(d.properties.data) + "</p>" + "<br>" + isUndefined2(d.properties.data)
-			)
-			.style("left", (d3.event.pageX + 15) + "px")
-			.style("top", (d3.event.pageY - 28) + "px");
-		})
-		.on("mouseout", function(d) {
-			tooltip.transition()
-			.duration(250)
-			.style("opacity", 0);
-		});
 
 	svg.append("path")
 		.datum(topojson.feature(us, us.objects.states, function(a, b) { return a !== b; }))
@@ -261,21 +239,54 @@ function ready(error, data, us) {
 		.style("text-anchor", "middle")
 		.text(function(d, i) { return legendText[i]; });
 
-	function update(year){
-		//slider.property("value", year);
-		//d3.select(".year").text(year);
+	function updatecountry(selectedOption) {
+
+    var arr = []
 		countyShapes.style("fill", function(d) {
-            //console.log(d.properties.years[year][0].rate)
-            if (d.properties.data !== undefined) {
-              //console.log(d.properties.data[0].Admissions)
-              return color(d.properties.data[0].Admissions)
-            } else {
-              //console.log("ZERO")
-              return color(0)
-            }
-            //return color(d.properties.data[0].Admissions)
-            //console.log(markers[0].Admissions)
-            //return color(10)
+          if (d.properties.data !== undefined) {
+            //console.log(d.properties.data[0].Admissions)
+              if (d.properties.data[0].CountryofBirth == selectedOption) {
+                arr.push(d.properties.data[0])
+                return color(d.properties.data[0].Admissions)
+              } else {
+                return color(0)
+              }
+          } else {
+            return color(0)
+          }
+    });
+    console.log(arr)
+
+    countyShapes
+      .on("mouseover", function(d) {
+        tooltip.html()
+        tooltip.transition()
+        .duration(250)
+        .style("opacity", 1);
+        tooltipHTML(selectedOption, d);
+      })
+      .on("mouseout", function(d) {
+        tooltip.transition()
+        .duration(250)
+        .style("opacity", 0);
+      });
+  }
+
+  function tooltipHTML(selectedOption, d) {
+    if (d.properties.data[0].CountryofBirth == selectedOption) {
+      tooltip.html(
+        "<p><strong>" + d.properties.data[0].CountyState + "</strong></p>" +
+        "<table><tbody><tr><td class='wide'>Country of Birth:</td><td>" + d.properties.data[0].CountryofBirth + "</td></tr>" +
+        "<tr><td>Admissions:</td><td>" + d.properties.data[0].Admissions + "</td></tr></tbody></table>"
+      )
+        .style("left", (d3.event.pageX + 15) + "px")
+        .style("top", (d3.event.pageY - 28) + "px");
+    }
+  }
+  
+  function defaultmap(){ //before dropdown option chosen
+		countyShapes.style("fill", function(d) {
+        return color(0)
 		});
 	}
 
@@ -290,9 +301,21 @@ function ready(error, data, us) {
 				update(year);
 			});
 
-update();
+defaultmap();
+
+//update();
+var count = 0
+
+d3.select("#selectButton").on("change", function(d) {
+  // recover the option that has been chosen
+  var selectedOption = d3.select(this).property("value")
+  // run the updateChart function with this selected option
+  updatecountry(selectedOption)
+})
 
 }
+
+
 
 d3.select(self.frameElement).style("height", "685px");
 </script>
