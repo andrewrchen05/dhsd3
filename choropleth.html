@@ -110,7 +110,7 @@ input {
 
 <div id="content">
   <h1>LPR Top 200 AAPI 2000-2019</h1>
-  <select id="selectButton"></select>
+  <select id="selectButton"></select><select id="selectClass"></select>
 	<h2 class="year"></h2>
 	<div class="slider"></div>
 	<div id="map"></div>
@@ -150,29 +150,37 @@ function ready(error, data, us) {
       d.geoid = +d.geoid
       d.Admissions = +d.Admissions
   });
-    
-    markers = data.filter(function(d) {
-        //if (d["CountryofBirth"] == "China, People's Republic" && d["MajorClassAdmission"] == "EmploymentPreference1st" && d["Admissions"] != "D" && !isNaN(d["Admissions"])) {
-        if (d["MajorClassAdmission"] == "EmploymentPreference1st" && d["Admissions"] != "D" && !isNaN(d["Admissions"])) {
-          return d
-        }
-    })
-    //console.log(markers)
 
-    var max = 0
-    markers.forEach(function(d) { 
-        if (d["Admissions"] > max) {
-            max = d["Admissions"]
-        }
-    });  
+    markers = data.filter(function(d) {
+      if ((d["MajorClassAdmission"] == "EmploymentPreference1st")
+            && d["Admissions"] != "D" && !isNaN(d["Admissions"])) {
+        return d
+      }
+    })
+    console.log(markers)
+    
+    // var datamarkers = markers.filter(function(d) {
+    //   if (d["CountryofBirth"] == "China, People's Republic" && d["MajorClassAdmission"] == "EmploymentPreference1st") {
+    //     return d
+    //   }
+    // })
+    // console.log(datamarkers)
+
+    // var max = 0
+    // markers.forEach(function(d) { 
+    //     if (d["Admissions"] > max) {
+    //         max = d["Admissions"]
+    //     }
+    // });  
 
 	  var dataByCounty = d3.nest()
         .key(function(d) { return d.geoid; })
         .map(markers);
 
-    //console.log(dataByCounty)
+    console.log(typeof dataByCounty)
         
     //Inefficient, this graph made for little missing data
+    console.log(counties)
 
 	  counties.features.forEach(function(county) {
         county.properties.data = dataByCounty[+county.id]
@@ -181,6 +189,8 @@ function ready(error, data, us) {
     var allGroup = ["", "Bangladesh", "Bhutan", "Brunei", "Burma", "Cambodia", "China, People's Republic", "Hong Kong", "India", "Indonesia",
                         "Japan", "Korea, North", "Korea, South", "Laos", "Macau", "Malaysia", "Maldives", "Mongolia", "Nepal", "Pakistan", "Philippines",
                       "Singapore", "Sri Lanka", "Taiwan", "Thailand", "Vietnam"]
+
+    var allClass = ["", "EmploymentPreference1st", "EmploymentPreference2nd", "EmploymentPreference3rd", "EmploymentPreference4th", "EmploymentPreference5th"]
 
           // add the options to the button
         d3.select("#selectButton")
@@ -191,9 +201,16 @@ function ready(error, data, us) {
           .text(function (d) { return d; }) // text showed in the menu
           .attr("value", function (d) { return d; }) // corresponding value returned by the button
 
+          d3.select("#selectClass")
+            .selectAll('myOptions1')
+            .data(allClass)
+            .enter()
+            .append('option')
+            .text(function (d) { return d; }) // text showed in the menu
+            .attr("value", function (d) { return d; }) // corresponding value returned by the button
+
 	var color = d3.scale.threshold()
-        //.domain([10, 12.5, 15, 17.5, 20, 22.5, 25])
-        .domain([0, 2, 4, 6, 8, 10, max])
+        .domain([0, 2, 4, 6, 8, 10, 100])
     //.range(["#fff7bc", "#fee391", "#fec44f", "#fe9929", "#ec7014", "#cc4c02", "#993404", "#662506"]);
     .range(d3.schemeBlues[9])
 
@@ -239,23 +256,23 @@ function ready(error, data, us) {
 		.style("text-anchor", "middle")
 		.text(function(d, i) { return legendText[i]; });
 
-	function updatecountry(selectedOption) {
+	function updatecountry(selectedOption, selectedClass) {
 
-    var arr = []
+    console.log(selectedOption)
+    console.log(selectedClass)
+
 		countyShapes.style("fill", function(d) {
-          if (d.properties.data !== undefined) {
-            //console.log(d.properties.data[0].Admissions)
-              if (d.properties.data[0].CountryofBirth == selectedOption) {
-                arr.push(d.properties.data[0])
-                return color(d.properties.data[0].Admissions)
-              } else {
-                return color(0)
-              }
-          } else {
-            return color(0)
-          }
+
+        if (d.properties.data !== undefined) {
+            if (d.properties.data[0].MajorClassAdmission == selectedClass && d.properties.data[0].CountryofBirth == selectedOption) {
+              return color(d.properties.data[0].Admissions)
+            } else {
+              return color(0)
+            }
+        } else {
+          return color(0)
+        }
     });
-    console.log(arr)
 
     countyShapes
       .on("mouseover", function(d) {
@@ -272,7 +289,12 @@ function ready(error, data, us) {
       });
   }
 
+  function clearTooltip() {
+  }
+
   function tooltipHTML(selectedOption, d) {
+    clearTooltip()
+
     if (d.properties.data[0].CountryofBirth == selectedOption) {
       tooltip.html(
         "<p><strong>" + d.properties.data[0].CountyState + "</strong></p>" +
@@ -301,16 +323,29 @@ function ready(error, data, us) {
 				update(year);
 			});
 
-defaultmap();
+defaultmap()
 
-//update();
-var count = 0
+var selectedOption = ""
 
 d3.select("#selectButton").on("change", function(d) {
   // recover the option that has been chosen
-  var selectedOption = d3.select(this).property("value")
+  selectedOption = d3.select(this).property("value")
   // run the updateChart function with this selected option
-  updatecountry(selectedOption)
+  //updatecountry(selectedOption)
+})
+
+// d3.select("#selectButton #selectClass").on("change", function(d) {
+//   // recover the option that has been chosen
+//   var selectedClass = d3.select(this).property("value")
+//   // run the updateChart function with this selected option
+//   updatecountry(selectedOption, selectedClass)
+//   })
+
+d3.select("#selectClass").on("change", function(d) {
+  // recover the option that has been chosen
+  var selectedClass = d3.select(this).property("value")
+  // run the updateChart function with this selected option
+  updatecountry(selectedOption, selectedClass)
 })
 
 }
