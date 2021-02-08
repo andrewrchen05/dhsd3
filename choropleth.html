@@ -152,26 +152,14 @@ function ready(error, data, us) {
   });
 
     markers = data.filter(function(d) {
-      if ((d["MajorClassAdmission"] == "EmploymentPreference1st")
+      if ((d["MajorClassAdmission"] == "EmploymentPreference1st"
+            || d["MajorClassAdmission"] == "EmploymentPreference3rdSkilled" || d["MajorClassAdmission"] == "EmploymentPreference3rdUnskilled"
+            || d["MajorClassAdmission"] == "EmploymentPreference4th" || d["MajorClassAdmission"] == "EmploymentPreference5th")
             && d["Admissions"] != "D" && !isNaN(d["Admissions"])) {
         return d
       }
     })
     console.log(markers)
-    
-    // var datamarkers = markers.filter(function(d) {
-    //   if (d["CountryofBirth"] == "China, People's Republic" && d["MajorClassAdmission"] == "EmploymentPreference1st") {
-    //     return d
-    //   }
-    // })
-    // console.log(datamarkers)
-
-    // var max = 0
-    // markers.forEach(function(d) { 
-    //     if (d["Admissions"] > max) {
-    //         max = d["Admissions"]
-    //     }
-    // });  
 
 	  var dataByCounty = d3.nest()
         .key(function(d) { return d.geoid; })
@@ -211,7 +199,6 @@ function ready(error, data, us) {
 
 	var color = d3.scale.threshold()
         .domain([0, 2, 4, 6, 8, 10, 100])
-    //.range(["#fff7bc", "#fee391", "#fec44f", "#fe9929", "#ec7014", "#cc4c02", "#993404", "#662506"]);
     .range(d3.schemeBlues[9])
 
 	var projection = d3.geo.albersUsa()
@@ -231,30 +218,7 @@ function ready(error, data, us) {
 		.datum(topojson.feature(us, us.objects.states, function(a, b) { return a !== b; }))
 			.attr("class", "states")
 			.attr("d", path);
-
-	var legend = svg.append("g")
-		.attr("id", "legend");
-
-	var legenditem = legend.selectAll(".legenditem")
-		.data(d3.range(8))
-		.enter()
-		.append("g")
-			.attr("class", "legenditem")
-			.attr("transform", function(d, i) { return "translate(" + i * 31 + ",0)"; });
-
-	legenditem.append("rect")
-		.attr("x", width - 240)
-		.attr("y", -7)
-		.attr("width", 30)
-		.attr("height", 6)
-		.attr("class", "rect")
-		.style("fill", function(d, i) { return legendColors[i]; });
-
-	legenditem.append("text")
-		.attr("x", width - 240)
-		.attr("y", -10)
-		.style("text-anchor", "middle")
-		.text(function(d, i) { return legendText[i]; });
+  var arr=[]
 
 	function updatecountry(selectedOption, selectedClass) {
 
@@ -265,6 +229,7 @@ function ready(error, data, us) {
 
         if (d.properties.data !== undefined) {
             if (d.properties.data[0].MajorClassAdmission == selectedClass && d.properties.data[0].CountryofBirth == selectedOption) {
+              arr.push(d.properties.data[0])
               return color(d.properties.data[0].Admissions)
             } else {
               return color(0)
@@ -280,7 +245,7 @@ function ready(error, data, us) {
         tooltip.transition()
         .duration(250)
         .style("opacity", 1);
-        tooltipHTML(selectedOption, d);
+        tooltipHTML(selectedOption, selectedClass, d);
       })
       .on("mouseout", function(d) {
         tooltip.transition()
@@ -288,14 +253,12 @@ function ready(error, data, us) {
         .style("opacity", 0);
       });
   }
+  console.log(arr)
 
-  function clearTooltip() {
-  }
+  function tooltipHTML(selectedOption, selectedClass, d) {
 
-  function tooltipHTML(selectedOption, d) {
-    clearTooltip()
-
-    if (d.properties.data[0].CountryofBirth == selectedOption) {
+    if (d.properties.data[0].CountryofBirth == selectedOption && d.properties.data[0].MajorClassAdmission == selectedClass
+        && d.properties.data !== undefined) {
       tooltip.html(
         "<p><strong>" + d.properties.data[0].CountyState + "</strong></p>" +
         "<table><tbody><tr><td class='wide'>Country of Birth:</td><td>" + d.properties.data[0].CountryofBirth + "</td></tr>" +
@@ -328,18 +291,8 @@ defaultmap()
 var selectedOption = ""
 
 d3.select("#selectButton").on("change", function(d) {
-  // recover the option that has been chosen
   selectedOption = d3.select(this).property("value")
-  // run the updateChart function with this selected option
-  //updatecountry(selectedOption)
 })
-
-// d3.select("#selectButton #selectClass").on("change", function(d) {
-//   // recover the option that has been chosen
-//   var selectedClass = d3.select(this).property("value")
-//   // run the updateChart function with this selected option
-//   updatecountry(selectedOption, selectedClass)
-//   })
 
 d3.select("#selectClass").on("change", function(d) {
   // recover the option that has been chosen
@@ -349,8 +302,6 @@ d3.select("#selectClass").on("change", function(d) {
 })
 
 }
-
-
 
 d3.select(self.frameElement).style("height", "685px");
 </script>
