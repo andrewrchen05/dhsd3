@@ -84,6 +84,12 @@
 
   var data = d3.csv("data/sheet.csv", function(data) {
 
+      data.forEach(function(d) {
+          d.Admissions = +d.Admissions
+          d.lon = +d.lon
+          d.lat = +d.lat
+      });
+
       markers = data.filter(function(d) { 
 
         if( 
@@ -92,9 +98,9 @@
             || d["MajorClassAdmission"] == "EmploymentPreference4th" || d["MajorClassAdmission"] == "EmploymentPreference5th"
             ) 
             && d["Admissions"] != "D" 
-            && d["lon"] != "NA" && d["lat"] != "NA") { 
+            && d["lon"] != "NA" && d["lat"] != "NA" ) {
             //&& isFloat(d["lon"]) && isFloat(d["lat"])) { 
-          return d;
+              return d;
         } 
       })
       console.log(markers)   
@@ -177,6 +183,8 @@
         }
         var size;
 
+        arr=[]
+
         function update(){   
           datamarkers.forEach(function(d) {
               d["Admissions"] = +d["Admissions"];
@@ -200,9 +208,9 @@
               .enter()
               .append("circle")
                   .attr("class" , function(d){ return (d.MajorClassAdmission) })
-                  .attr("cx", function(d){ return projection([d.lon, d.lat])[0] })
+                  .attr("cx", function(d){ /*console.log([d.lon, d.lat]);*/ return projection([d.lon, d.lat])[0] })
                   .attr("cy", function(d){ return projection([d.lon, d.lat])[1] })
-                  .attr("r", function(d){})
+                  .attr("r", function(d){ return size(d.Admissions) })
                   .style("fill", function(d){ return color(d.MajorClassAdmission) })
                   .attr("stroke", function(d){ return color(d.MajorClassAdmission) })
                   .attr("stroke-width", 2)
@@ -225,6 +233,8 @@
               }
             })
         }
+
+        console.log(arr)
 
         function updatecountry(selectedGroup) {
           
