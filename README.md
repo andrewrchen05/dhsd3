@@ -24,7 +24,8 @@ Enter ctrl-c to kill server and the above command to end the process<br />
 The `/data` repository contains csv files of cleaned LPR Top 200 data for 2007-2019. For some reason, the following error persists:
 ![Screen Shot 2021-03-15 at 6 24 17 PM](https://user-images.githubusercontent.com/30973083/111242902-52d5f980-85bd-11eb-90f9-bbada0418d32.png)
 
-I'm not sure where this error is coming from, since the cleaned data used the same code to generate `sheet.csv` Using `sheet.csv` when loading `d3.csv` works. The offending piece of code is shown here: ![Screen Shot 2021-03-15 at 6 41 19 PM](https://user-images.githubusercontent.com/30973083/111243321-1e167200-85be-11eb-9e4c-a0456a1d2b53.png)
+I'm not sure where this error is coming from, since the cleaned data used the same code to generate `sheet.csv` Using `sheet.csv` when loading `d3.csv` works. The offending piece of code is shown here:
+![Screen Shot 2021-03-15 at 6 41 19 PM](https://user-images.githubusercontent.com/30973083/111243321-1e167200-85be-11eb-9e4c-a0456a1d2b53.png)
 
 When opening the csv, I don't see any instance where the floating values could be interpreted as '0.' Still, it seems that when passing in lon, lat coordinates to the `projection` function, we get our error.
 
